@@ -3,7 +3,6 @@
 
 using namespace std;
 
-enum Direction { LEFT, RIGHT, UP, DOWN };
 int dy[4] = { 0,0,-1,1 };
 int dx[4] = { -1,1,0,0 };
 
@@ -16,7 +15,7 @@ typedef struct Position {
 int board[10][10];
 pair<int, int> hole;
 
-void move(Direction dir, pair<int, int>& moveM, pair<int, int>& otherM) {
+void move(int dir, pair<int, int>& moveM, pair<int, int>& otherM) {
 	int curY = moveM.first, curX = moveM.second;
 
 	while (true) {
@@ -38,36 +37,6 @@ void move(Direction dir, pair<int, int>& moveM, pair<int, int>& otherM) {
 	moveM = { curY, curX };
 }
 
-void getOrder(Direction dir, pair<int, int>& red, pair<int, int>& blue) {
-	bool flag = true;
-	switch (dir) {
-	case LEFT:
-		if (red.first == blue.first && red.second > blue.second)
-			flag = false;
-		break;
-	case RIGHT:
-		if (red.first == blue.first && red.second < blue.second)
-			flag = false;
-		break;
-	case UP:
-		if (red.second == blue.second && red.first > blue.first)
-			flag = false;
-		break;
-	case DOWN:
-		if (red.second == blue.second && red.first < blue.first)
-			flag = false;
-		break;
-	}
-	if (flag == true) {
-		move(dir, red, blue);
-		move(dir, blue, red);
-	}
-	else {
-		move(dir, blue, red);
-		move(dir, red, blue);
-	}
-}
-
 int bfs(pair<int, int>& red, pair<int, int>& blue) {
 	queue<Position> Q;
 
@@ -85,7 +54,20 @@ int bfs(pair<int, int>& red, pair<int, int>& blue) {
 			pair<int, int> redNext(redCur);
 			pair<int, int> blueNext(blueCur);
 
-			getOrder(Direction(i), redNext, blueNext);
+			bool redFirst = true;
+
+			if ((i == 0 && redNext.second > blueNext.second) || (i == 1 && redNext.second < blueNext.second)
+				|| (i == 2 && redNext.first > blueNext.first) || (i == 3 && redNext.first < blueNext.first))
+				redFirst = false;
+
+			if (redFirst == true) {
+				move(i, redNext, blueNext);
+				move(i, blueNext, redNext);
+			}
+			else {
+				move(i, blueNext, redNext);
+				move(i, redNext, blueNext);
+			}
 
 			if (blueNext == hole)
 				continue;
